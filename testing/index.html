@@ -24,7 +24,8 @@
   </div>
   <section id="evidence" data-panel>
     <div class="grid grid-3" id="evidence-stats" style="margin-bottom:16px"></div>
-    <div class="card" style="margin-bottom:16px"><h2 style="margin-top:0">固定评测集 · 目标 30–50 个</h2><p class="muted">每条对应一个真实需求或用例，记录人工判定和典型失败。可先从少量样本开始，不需一次填满。</p>
+    <div class="card" style="margin-bottom:16px"><h2 style="margin-top:0">固定评测集 · 目标 30–50 个</h2><p class="muted">每条对应一个真实需求或用例。先写清本轮生成范围和优先级，再判断缺失是漏测还是主动取舍。</p>
+      <div class="answer"><b>怎么判定“漏测”？</b>先看本轮承诺覆盖什么。例如要求覆盖“登录失败时拒绝错误密码”这个 P0 行为，AI 没生成对应检查，就记“范围内漏测”；明确留到下一轮的 P2 文案检查，记“有意延后”，写原因与负责人，不计入本轮漏测。只说“优先 P0”却没列必测行为时，先标“范围待确认”。</div>
       <div class="testing-layout"><div><button class="btn primary" id="case-add">新增样本</button><div class="testing-list" id="case-list" style="margin-top:10px"></div></div><div class="testing-form" id="case-editor"></div></div></div>
     <div class="card"><h2 style="margin-top:0">提示词／规则迭代对比</h2><p class="muted">同一批样本、同一评价口径比较前后。数值按“分子 / 分母”填写，页面只计算真实输入。</p>
       <div class="testing-layout"><div><button class="btn primary" id="iteration-add">新增对比</button><div class="testing-list" id="iteration-list" style="margin-top:10px"></div></div><div class="testing-form" id="iteration-editor"></div></div></div>

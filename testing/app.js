@@ -12,6 +12,9 @@ const $ = id => document.getElementById(id);
 const current = (kind, id) => state[kind].find(item => item.id === id);
 const field = (label, key, value, rows = 3) => `<div class="field"><label for="f-${key}">${esc(label)}</label><textarea id="f-${key}" data-field="${key}" rows="${rows}">${esc(value || '')}</textarea></div>`;
 const short = (label, key, value, type = 'text') => `<div class="field"><label for="f-${key}">${esc(label)}</label><input id="f-${key}" data-field="${key}" type="${type}" value="${esc(value || '')}"></div>`;
+const choice = (label, key, value, options) => `<div class="field"><label for="f-${key}">${esc(label)}</label><select id="f-${key}" data-field="${key}">${options.map(([id, name]) => `<option value="${esc(id)}" ${id === value ? 'selected' : ''}>${esc(name)}</option>`).join('')}</select></div>`;
+const DECISIONS = [['', '尚未判定'], ['covered', '已覆盖'], ['in-scope-miss', '范围内漏测'], ['intentional-defer', '有意延后'], ['out-of-scope', '不在本轮范围'], ['unclear', '范围待确认']];
+const decisionName = id => DECISIONS.find(([key]) => key === id)?.[1] || '尚未判定';
 function saveNow() {
   clearTimeout(saveTimer);
   const snapshot = structuredClone(state);
@@ -43,25 +46,36 @@ function evidenceSignature(item) { const { review, reviewedSignature, ...facts }
 function renderStats() {
   $('evidence-stats').innerHTML = [
     [`${state.cases.length} / 30–50`, '固定评测样本'],
+    [state.cases.filter(c => c.coverageDecision === 'in-scope-miss').length, '范围内漏测'],
+    [state.cases.filter(c => c.coverageDecision === 'intentional-defer').length, '有意延后'],
     [state.iterations.length, '规则对比记录'],
     [state.stories.filter(s => s.problem && s.validation).length + ' / 2', '完整项目案例'],
   ].map(([value, label]) => `<div class="card stat"><div class="num">${esc(value)}</div><div class="label">${esc(label)}</div></div>`).join('');
 }
 function renderCases() {
-  $('case-list').innerHTML = state.cases.length ? state.cases.slice().reverse().map(item => `<button class="btn ${item.id === selectedCase ? 'active' : ''}" data-case="${esc(item.id)}"><b>${esc(item.requirement || '未命名样本')}</b><span class="muted small"> · ${esc(item.date || '')}</span></button>`).join('') : '<p class="muted small">尚无样本。从最近一次真实需求开始。</p>';
+  $('case-list').innerHTML = state.cases.length ? state.cases.slice().reverse().map(item => `<button class="btn ${item.id === selectedCase ? 'active' : ''}" data-case="${esc(item.id)}"><b>${esc(item.requirement || '未命名样本')}</b><span class="muted small"> · ${esc(item.priority || '优先级待定')} · ${esc(decisionName(item.coverageDecision))}</span></button>`).join('') : '<p class="muted small">尚无样本。从最近一次真实需求开始。</p>';
   $('case-list').querySelectorAll('[data-case]').forEach(button => button.onclick = () => { selectedCase = button.dataset.case; renderCases(); });
   const item = current('cases', selectedCase);
   const editor = $('case-editor');
   if (!item) { editor.innerHTML = '<p class="muted">选择一个样本查看或编辑。</p>'; return; }
   editor.innerHTML = `<h3 style="margin-top:0">样本与人工判定</h3>
     ${short('需求／用例标识（可脱敏）', 'requirement', item.requirement)}
+    ${choice('这项场景的优先级', 'priority', item.priority, [['', '待确认'], ['P0', 'P0 · 本轮必须优先'], ['P1', 'P1'], ['P2', 'P2'], ['other', '其他']])}
+    ${field('给 AI 的生成范围与取舍要求', 'generationScope', item.generationScope, 2)}
     ${field('验收标准与应覆盖的行为', 'acceptance', item.acceptance)}
     ${field('AI 实际生成了什么', 'aiOutput', item.aiOutput)}
-    ${field('漏测、错误预期、重复或不可执行项', 'finding', item.finding)}
+    ${choice('人工判定：缺失属于哪一种？', 'coverageDecision', item.coverageDecision, DECISIONS)}
+    ${field('判定理由：为什么在范围内／为什么延后？', 'decisionReason', item.decisionReason, 2)}
+    ${field('后续处理：补用例、下轮覆盖、风险接受人与期限', 'followUp', item.followUp, 2)}
+    ${field('其他问题：错误预期、重复或不可执行项', 'finding', item.finding)}
     ${field('脚本首次运行、人工修改与失败根因', 'execution', item.execution)}
     ${short('原始证据位置（链接／日志／提交）', 'evidenceRef', item.evidenceRef)}
     <div class="row"><span class="badge warn">工作中积累</span><button class="btn ghost sm" id="case-delete">删除此样本</button></div>`;
-  bindFields(editor, item, renderStats);
+  bindFields(editor, item, () => {
+    renderStats();
+    const button = [...$('case-list').querySelectorAll('[data-case]')].find(b => b.dataset.case === item.id);
+    if (button) button.innerHTML = `<b>${esc(item.requirement || '未命名样本')}</b><span class="muted small"> · ${esc(item.priority || '优先级待定')} · ${esc(decisionName(item.coverageDecision))}</span>`;
+  });
   $('case-delete').onclick = async () => { if (!confirm('删除这个评测样本？')) return; state.cases = state.cases.filter(x => x.id !== item.id); selectedCase = state.cases.at(-1)?.id || null; try { await saveNow(); renderEvidence(); } catch (error) { fail(error); } };
 }
 function measure(item, prefix) {
@@ -93,7 +107,7 @@ function renderIterations() {
     if (!item.rule?.trim()) return toast('先写规则改动');
     const signature = evidenceSignature(item);
     setBusy(true);
-    try { const data = await callAI('evidence-evaluate', 'AI 正在审查评测证据', { iteration: item, caseCount: state.cases.length }); item.review = data.review; item.reviewedSignature = signature; await saveNow(); toast('证据审查已保存'); if (selectedIteration === item.id) renderIterations(); }
+    try { const data = await callAI('evidence-evaluate', 'AI 正在审查评测证据', { iteration: item, cases: state.cases.slice(-50).map(c => ({ requirement: c.requirement, priority: c.priority, generationScope: c.generationScope, acceptance: c.acceptance, coverageDecision: c.coverageDecision, decisionReason: c.decisionReason, followUp: c.followUp })) }); item.review = data.review; item.reviewedSignature = signature; await saveNow(); toast('证据审查已保存'); if (selectedIteration === item.id) renderIterations(); }
     catch (error) { fail(error); } finally { setBusy(false); }
   };
   $('iteration-delete').onclick = async () => { if (!confirm('删除这条对比？')) return; state.iterations = state.iterations.filter(x => x.id !== item.id); selectedIteration = state.iterations.at(-1)?.id || null; try { await saveNow(); renderEvidence(); } catch (error) { fail(error); } };
@@ -154,8 +168,8 @@ function showTab(tab) {
   history.replaceState(null, '', '#' + tab);
 }
 document.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => showTab(button.dataset.tab));
-$('case-add').onclick = async () => { const item = { id: uid(), date: today() }; state.cases.push(item); selectedCase = item.id; try { await saveNow(); renderEvidence(); } catch (error) { fail(error); } };
-$('iteration-add').onclick = async () => { const item = { id: uid(), date: today(), metric: METRICS[0].id }; state.iterations.push(item); selectedIteration = item.id; try { await saveNow(); renderEvidence(); } catch (error) { fail(error); } };
+$('case-add').onclick = () => { const item = { id: uid(), date: today() }; state.cases.push(item); selectedCase = item.id; renderEvidence(); saveNow().catch(fail); };
+$('iteration-add').onclick = () => { const item = { id: uid(), date: today(), metric: METRICS[0].id }; state.iterations.push(item); selectedIteration = item.id; renderEvidence(); saveNow().catch(fail); };
 $('drill-generate').onclick = async () => {
   if (busy) return;
   const topic = $('drill-topic').value;

@@ -8,6 +8,7 @@ export const DRILLS = [
 ];
 
 export const METRICS = [
+  { id: 'required-coverage', name: '范围内必测场景覆盖率', unit: '已覆盖必测场景 / 范围内必测场景' },
   { id: 'case-edit', name: '用例人工修改率', unit: '需修改用例 / 评审用例' },
   { id: 'script-first-run', name: '脚本首次运行可用率', unit: '首次可用脚本 / 生成脚本' },
   { id: 'exploration-time', name: '重复探索耗时', unit: '总分钟数 / 同类任务数' },
@@ -16,7 +17,7 @@ export const METRICS = [
 ];
 
 export const WORK_ITEMS = [
-  ['评测样本', '从真实需求或用例中逐步固定 30–50 个代表性样本；记录验收标准、AI 产物和人工判定。'],
+  ['评测样本', '从真实需求或用例中逐步固定 30–50 个代表性样本；先记录生成范围与 P0/P1 取舍，再判断范围内漏测或有意延后。'],
   ['基线与对比', '每次提示词或规则调整前后用同一评测集复跑，保留样本量、分子分母和典型失败。'],
   ['亲手编码', '在现有项目里独立完成一个边界清晰的 Python／Playwright／CI 小改动，并用测试证明。'],
   ['两段完整案例', '记录“问题 → 判断 → 规则调整 → 验证结果”，区分本人决策、亲手代码与 AI 协助实现。'],

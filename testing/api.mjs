@@ -43,7 +43,8 @@ async function evaluateEvidence(body) {
   const item = body?.iteration;
   if (!item?.rule?.trim()) throw Object.assign(new Error('先写规则改动'), { status: 400 });
   const { review, reviewedSignature, ...facts } = item;
-  const result = await run(`你是 AI 测试评测负责人。审查这次提示词/规则改动的效果证据：是否有固定评测集、改动前后的可比分子分母、真实失败案例和根因，结论是否超出证据。不能编造百分比、样本量或工作成果；没有基线就明确指出。\n当前已登记样本数：${Number(body.caseCount) || 0}\n对比记录：${JSON.stringify(facts).slice(0, 15000)}\n用简短中文返回 strengths、gaps 和下一步可验证动作。`, EVIDENCE);
+  const cases = Array.isArray(body.cases) ? body.cases.slice(-50).map(c => ({ priority: String(c.priority || '').slice(0, 20), generationScope: String(c.generationScope || '').slice(0, 500), acceptance: String(c.acceptance || '').slice(0, 500), coverageDecision: String(c.coverageDecision || '').slice(0, 40), decisionReason: String(c.decisionReason || '').slice(0, 500), followUp: String(c.followUp || '').slice(0, 500) })) : [];
+  const result = await run(`你是 AI 测试评测负责人。审查这次提示词/规则改动的效果证据：是否有固定评测集、改动前后的可比分子分母、真实失败案例和根因，结论是否超出证据。评估覆盖时先看给 AI 的生成范围与优先级：范围内应覆盖而缺失的场景才是漏测；明确有意延后的 P1/P2 要单列跟踪，不计入本轮范围内漏测或必测覆盖率的分母。若只有“优先 P0”而未定义必须覆盖哪些验收行为，指出口径不清。不能编造百分比、样本量或工作成果；没有基线就明确指出。\n已登记样本数：${cases.length}\n样本范围与判定：${JSON.stringify(cases).slice(0, 16000)}\n对比记录：${JSON.stringify(facts).slice(0, 12000)}\n用简短中文返回 strengths、gaps 和下一步可验证动作。`, EVIDENCE);
   return { review: result.output, provider: result.provider, model: result.model };
 }
 
