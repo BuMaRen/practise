@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>质量工程 · practise</title><link rel="stylesheet" href="/assets/style.css">
+<style>
+  .work-callout { border: 2px solid var(--warn); background: var(--warn-soft); }
+  .work-callout h2 { margin-top: 0; }
+  .work-callout li { margin-bottom: 7px; }
+  .testing-layout { display:grid; grid-template-columns:minmax(210px,280px) minmax(0,1fr); gap:16px; }
+  .testing-list { display:grid; gap:6px; align-content:start; }
+  .testing-list button { text-align:left; white-space:normal; }
+  .testing-list button.active { border-color:var(--accent); background:var(--accent-soft); }
+  .testing-form { min-width:0; }
+  .testing-form textarea { min-height:85px; }
+  .testing-form .code { min-height:260px; font-family:ui-monospace,monospace; }
+  .metric-pair { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  @media(max-width:720px){.testing-layout,.metric-pair{grid-template-columns:1fr}}
+</style></head><body>
+<main>
+  <div class="page-head"><h1>质量工程</h1><p>主线练 AI 测试评估与项目证据；备线恢复 Python 自动化、CI 和问题定位的亲手能力。</p></div>
+  <section class="card work-callout" id="work-items"><h2>★ 工作中重点积累</h2><p>这些事实只能来自真实工作记录。先建基线，再描述变化；不要为了简历填估计百分比。</p><ol id="work-list"></ol></section>
+  <div class="grid grid-3" style="margin-top:16px"><div class="card"><b>第 1–2 周 · 建基线</b><p class="muted small" style="margin:6px 0 0">整理两版简历与个人贡献，从真实案例开始固定评测样本并同步投递。</p></div><div class="card"><b>第 3–6 周 · 做改进</b><p class="muted small" style="margin:6px 0 0">每周亲手写自动化代码，复跑规则对比，讲熟架构和两段案例。</p></div><div class="card"><b>第 7–10 周 · 按反馈调整</b><p class="muted small" style="margin:6px 0 0">面试后补具体短板；参考投入：项目案例与编码约 50%、系统设计 30%、算法 20%。</p></div></div>
+  <div class="tabs" style="margin-top:20px">
+    <button data-tab="evidence">评测证据</button><button data-tab="automation">Python 自动化</button><button data-tab="stories">项目案例</button>
+  </div>
+  <section id="evidence" data-panel>
+    <div class="grid grid-3" id="evidence-stats" style="margin-bottom:16px"></div>
+    <div class="card" style="margin-bottom:16px"><h2 style="margin-top:0">固定评测集 · 目标 30–50 个</h2><p class="muted">每条对应一个真实需求或用例，记录人工判定和典型失败。可先从少量样本开始，不需一次填满。</p>
+      <div class="testing-layout"><div><button class="btn primary" id="case-add">新增样本</button><div class="testing-list" id="case-list" style="margin-top:10px"></div></div><div class="testing-form" id="case-editor"></div></div></div>
+    <div class="card"><h2 style="margin-top:0">提示词／规则迭代对比</h2><p class="muted">同一批样本、同一评价口径比较前后。数值按“分子 / 分母”填写，页面只计算真实输入。</p>
+      <div class="testing-layout"><div><button class="btn primary" id="iteration-add">新增对比</button><div class="testing-list" id="iteration-list" style="margin-top:10px"></div></div><div class="testing-form" id="iteration-editor"></div></div></div>
+  </section>
+  <section id="automation" data-panel class="hidden">
+    <div class="card"><div class="row"><div><h2 style="margin:0">亲手写一题</h2><p class="muted small" style="margin:4px 0 0">AI 出具体场景，你在页面写实现并在本机运行；AI 只做静态审阅。</p></div><span class="spacer"></span><select id="drill-topic" aria-label="练习方向" style="width:auto"></select><button class="btn primary" id="drill-generate">AI 出题</button></div>
+      <div class="testing-layout" style="margin-top:18px"><div class="testing-list" id="drill-list"></div><div class="testing-form" id="drill-editor"></div></div></div>
+    <div class="card work-callout" style="margin-top:16px"><b>★ 工作中完成一项小改动</b><p style="margin:8px 0 0">选择接口测试、Playwright、fixture、CI 或 flaky 治理中边界清楚的一项：自己写代码、运行测试、保留失败与修复记录。把事实填入“项目案例”，不要把页面练习当作工作成果。</p></div>
+  </section>
+  <section id="stories" data-panel class="hidden">
+    <div class="card"><h2 style="margin-top:0">两段完整项目案例</h2><p class="muted">每段都讲清问题、判断、规则变化和验证。CaseHub／auto-test 的事实以代码和工作记录为准；托管模式的自动推进与人在岗评审要分开说。</p>
+      <div class="row" style="margin-bottom:14px"><button class="btn" data-story="0">案例一</button><button class="btn" data-story="1">案例二</button></div>
+      <div id="story-editor"></div></div>
+    <div class="card work-callout" style="margin-top:16px"><b>★ 工作中留下可追问的证据</b><p style="margin:8px 0 0">保留需求/用例编号、规则版本、执行日志、失败根因和改动前后样本。面试时明确哪些判断是你做的、哪些代码是你亲手写的、AI 参与了什么。</p></div>
+  </section>
+</main><script type="module" src="./app.js"></script></body></html>

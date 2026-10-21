@@ -7,7 +7,7 @@ export const TOPICS = [
   {id:'S03',title:'重复请求与外部写入',focus:'至少一次执行、重复请求、阶段性提交、外部副作用去重',scenario:'工作流会写入外部系统，客户端可能重复提交，处理过程也可能中断',projectRelevant:true,concepts:['idempotency','distributed-transactions','message-queue','retry-timeout']},
   {id:'S04',title:'变化中的工作知识',focus:'知识或缓存的归属、命中条件、在线校验、局部修正',scenario:'一个智能系统希望复用过去的操作经验，但目标环境会变化',projectRelevant:true,concepts:['cache-patterns','consistency-models']},
   {id:'S05',title:'AI 产物上线流程',focus:'风险分级、置信度、审计、自动放行与人工介入门槛',scenario:'AI 生成的产物要进入生产流程，错误放行会造成业务损失',projectRelevant:true,concepts:['observability','cqrs-events']},
-  {id:'S06',title:'质量工程平台设计',focus:'从需求到用例、脚本、执行与报告的端到端架构',scenario:'可以直接以 CaseHub + auto-test 为场景，解释现状与改造取舍',projectRelevant:true,concepts:['message-queue','stateless-scaling','api-design','observability']},
+  {id:'S06',title:'质量工程平台设计',focus:'CaseHub／auto-test 分工、任务恢复与幂等、产物追溯、经验复用与失效、自动放行边界',scenario:'可以直接以 CaseHub + auto-test 为场景，解释实际架构与有证据支撑的改造取舍；区分当前实现和建议方案',projectRelevant:true,concepts:['message-queue','stateless-scaling','idempotency','observability']},
   {id:'S07',title:'协作数据平台',focus:'实体边界、状态机、事务、读写一致性与并发更新',scenario:'多人同时修改同一份业务数据，用户需要看到可靠的结果',projectRelevant:false,concepts:['transactions','consistency-models','distributed-lock','replication']},
   {id:'S08',title:'业务事件通知',focus:'生产消费、顺序、积压、死信、重放和交付语义',scenario:'一次业务动作要触发多个后续处理，流量和处理耗时有波动',projectRelevant:false,concepts:['message-queue','idempotency','retry-timeout','cqrs-events']},
   {id:'S09',title:'热门内容访问',focus:'缓存策略、失效、热点、穿透、降级与一致性取舍',scenario:'一个内容服务的热门内容访问量远高于更新量',projectRelevant:false,concepts:['cache-patterns','cache-failures','cdn','consistent-hashing']},

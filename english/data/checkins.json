@@ -24,5 +24,15 @@
     "minutes": 30,
     "note": "",
     "done": true
+  },
+  {
+    "date": "2026-10-21",
+    "track": "tech",
+    "tasks": [
+      "review-words"
+    ],
+    "minutes": 0,
+    "note": "",
+    "done": false
   }
 ]
