@@ -14,6 +14,7 @@ usage() {
   ./practise list            列出所有每日题目
   ./practise show YYYY-MM-DD 查看指定日期题目
   ./practise guide           显示学习材料目录
+  ./practise concepts        显示常用系统设计概念清单
   ./practise help            显示帮助
 EOF
 }
@@ -76,6 +77,9 @@ case "$action" in
 
 阅读命令示例：less "$ROOT/design-methods.md"
 EOF
+    ;;
+  concepts)
+    show_file "$ROOT/concepts.md"
     ;;
   help|-h|--help)
     usage
