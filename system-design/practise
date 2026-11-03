@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DAILY_DIR="$ROOT/daily"
+
+usage() {
+  cat <<'EOF'
+系统设计终端学习入口
+
+用法：
+  ./practise                 显示今日题目（找不到时显示最新题目）
+  ./practise today           同上
+  ./practise list            列出所有每日题目
+  ./practise show YYYY-MM-DD 查看指定日期题目
+  ./practise guide           显示学习材料目录
+  ./practise help            显示帮助
+EOF
+}
+
+show_file() {
+  local file="$1"
+  if command -v less >/dev/null 2>&1 && [[ -t 1 ]]; then
+    less -FRX "$file"
+  else
+    cat "$file"
+  fi
+}
+
+latest_topic() {
+  find "$DAILY_DIR" -maxdepth 1 -type f -name '*.md' -print | sort | tail -n 1
+}
+
+action="${1:-today}"
+case "$action" in
+  today)
+    date_key="$(date +%F)"
+    topic="$DAILY_DIR/$date_key.md"
+    if [[ ! -f "$topic" ]]; then
+      topic="$(latest_topic)"
+      if [[ -z "$topic" ]]; then
+        echo "还没有每日题目。" >&2
+        exit 1
+      fi
+      echo "今天（$date_key）尚无题目，显示最新题目：$(basename "$topic" .md)" >&2
+    fi
+    show_file "$topic"
+    ;;
+  list)
+    find "$DAILY_DIR" -maxdepth 1 -type f -name '*.md' -print | sort | while IFS= read -r file; do
+      printf '%s\n' "$(basename "$file" .md)"
+      sed -n '1p' "$file" | sed 's/^# //'
+      printf '\n'
+    done
+    ;;
+  show)
+    if [[ "${2:-}" == "" ]]; then
+      echo "用法：./practise show YYYY-MM-DD" >&2
+      exit 2
+    fi
+    topic="$DAILY_DIR/$2.md"
+    if [[ ! -f "$topic" ]]; then
+      echo "未找到题目：$2" >&2
+      exit 1
+    fi
+    show_file "$topic"
+    ;;
+  guide)
+    cat <<EOF
+系统设计学习材料：$ROOT
+
+  设计方法：$ROOT/design-methods.md
+  答题模板：$ROOT/answer-template.md
+  AI 评审标准：$ROOT/evaluation-rubric.md
+  每日题目：$DAILY_DIR/
+
+阅读命令示例：less "$ROOT/design-methods.md"
+EOF
+    ;;
+  help|-h|--help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac
